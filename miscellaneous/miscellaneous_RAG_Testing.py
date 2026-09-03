@@ -1,6 +1,3 @@
-"""
-Chunking? Threshold?
-"""
 import ollama
 import numpy as np
 
