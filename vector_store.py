@@ -33,16 +33,19 @@ def get_collection():
 
 def build_email_document(email):
     """
-    Convert an email record into the text
-    that will be embedded for semantic search.
+    Convert an email record into the text that will be embedded for semantic search.
     """
 
-    return (
+    content = (
         f"From: {email['sender']}\n"
         f"To: {email['recipient']}\n"
-        f"Date: {email['date']}\n"
-        f"Subject: {email['subject']}\n\n"
+        f"Date: {email['date']}\n\n"
         f"{email['body']}"
+    )
+
+    return (
+        f"title: {email['subject']} | "
+        f"text: {content}"
     )
 
 
@@ -67,7 +70,6 @@ def index_emails(emails):
 
     # Set index is efficient so we wouldn't have to worry about the time complexity here
     existing_ids = set(existing_records["ids"])
-
     new_emails = [
         email
         for email in emails
@@ -177,6 +179,11 @@ def search_emails(
     Return: a list of dictionaries, where each dictionary contains the following keys: id, document, metadata, distance
     """
 
+    query_text = (
+        f"task: question answering | query: {question}"
+    )
+
+
     collection = get_collection()
 
     if collection.count() == 0:
@@ -188,7 +195,7 @@ def search_emails(
 
     response = ollama.embed(
         model=EMBEDDING_MODEL,
-        input=question
+        input=query_text
     )
 
     query_embedding = (
