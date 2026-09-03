@@ -1,0 +1,21 @@
+# Virtual environment
+.venv/
+
+# PyCharm
+.idea/
+
+# Gmail credentials
+credentials/
+
+# Local databases / Chroma
+data/
+
+# Python cache
+__pycache__/
+*.pyc
+
+# Environment variables
+.env
+
+# macOS
+.DS_Store
