@@ -26,3 +26,7 @@ the focus is **RAG retrieval quality**.
 
 **Distant Future**: The agent now is a one-shot retrieval system with the retrieved context passed to an LLM for a single response.
 It is not yet conversational, which is the direction I am going for next.
+
+
+# License
+This project is licensed under the MIT License. See the `LICENSE` file for details.
