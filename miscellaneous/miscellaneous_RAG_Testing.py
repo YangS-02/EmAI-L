@@ -2,7 +2,6 @@ import ollama
 import numpy as np
 
 from vector_store import get_collection
-from ollama import embed
 
 if __name__ == "__main__":
     NUM_RESULTS = 5
