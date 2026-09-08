@@ -13,7 +13,7 @@ use a hybrid of self-labeled and synthetic sets.
 ## Sep 4, 2026
 - Start working on the test set. The following are some of the options for RAG testset generation:
   - [Ragas](https://docs.ragas.io/en/stable/concepts/test_data_generation/rag/);
-  - [RAGET](https://legacy-docs.giskard.ai/en/stable/open_source/testset_generation/testset_generation/index.html#raget-testset-generation);
+  - [RAGET (legacy)](https://legacy-docs.giskard.ai/en/stable/open_source/testset_generation/testset_generation/index.html#raget-testset-generation);
   - [DeepEval](https://deepeval.com/docs/synthetic-data-generation-introduction#recommended-priority)
 - To combine the self-labeled and the synthetic set later, have to somewhat format the way synthetic testset format their data.
 ## Sep 6, 2026
@@ -23,4 +23,13 @@ Giskard. The page I searched is legacy documentation, and it seems that they hav
 [Their newest version requires Python 3.12+](https://docs.giskard.ai/oss/migrate-from-v2#:~:text=Giskard%20v3%20requires%20Python%203.12%20or%20higher.)
 , which is another limitation since I am working with Python 3.11.1. Between RAGAS and DeepEval, I am leaning towards RAGAS as 
 they natively support [ids as part of the testset](https://docs.ragas.io/en/stable/references/evaluation_schema/#ragas.dataset_schema.BaseSample.to_string:~:text=SingleTurnSample,-Bases%3A%20BaseSample) and even offer [id-based metrices](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/?h=idbased#example_2:~:text=0.9999999999-,ID%20Based%20Context%20Precision,-IDBasedContextPrecision%20provides).
-- 
+### RAGAS
+- `SingleTurnSample` and `MultiTurnSample` are child of `BaseSample`. A `SingleTurnSample` is essentially one instance/interaction. For the current
+stage, `SingleTurnSample` is the focus, as we are not yet conversational.
+  - One thing to note is that attributes include both referenced contexts and contexts actually retrieved. And all attributes are optional. So, we can create instances of the class
+  from the self-labeled dataset file `eval_rag.json`. And then run RAG on each of the instances and populate fields like `retrieved_context_ids`, before passing these instances in the
+  `EvaluationDataset` class for evaluation with the `evaluate()` function.
+- `EvaluationDataset` then inherits from `RagasDataset`, and it specifies that it should contain either `SingleTurnSample`'s or `MultiTurnSample`'s.
+  - One confusion here is the difference between `EvaluationDataset` and the [Dataset](https://docs.ragas.io/en/stable/concepts/datasets/) described in the Core Concepts section.
+  Judging from the fact that the `evaluate()` method accepts both and the descriptions of `Dataset`, `Dataset` is a parallel to `EvaluationDataset` but with more
+  flexibility?
