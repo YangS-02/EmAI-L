@@ -40,6 +40,7 @@ Although I am leaning toward using the old architecture for evaluation since a l
 a continuous process as the project and data evolve over time. And working with the new version now seems like a more reasonable choice.
 From what I can understand so far, this new dataset and experiment architecture has a better versioning and iteration
 system. Plus, with the new `Dataset` I can still add ids as part of the evaluation dataset and implement id-based metrics myself.
+### Self-labeled Evaluation Dataset
 - Here is how I am going to structure my data:
   ```
   {
@@ -59,6 +60,11 @@ system. Plus, with the new `Dataset` I can still add ids as part of the evaluati
   ```
   - These are some of the metadata I can think of and could be useful in [slicing and dicing the dataset](https://docs.ragas.io/en/stable/concepts/datasets/#:~:text=Metadata%20is%20particularly%20useful%20for%20slicing%20and%20dicing%20the%20dataset%2C%20allowing%20you%20to%20analyze%20results%20across%20different%20facets) to
   see how the system could perform on different types of dataset. For example, how well does the RAG retrieve contexts involving dates and times?
-  - The fields are chosen for the evaluation of retrieval quality.
-  - reference_context_ids tell you which emails are relevant, but reference_contexts entails the actual relevant content in those emails. I haven't implemented chunking yet, but if I do, 
-  they can be important for tuning chunking later.
+  - Here is my current impasse: 
+    - I haven't yet implemented chunking in my RAG. And for now, it seems like semantic-based metrics are kind of excessive. 
+    The goal is to retrieve the correct/relevant document. But if I were to move on to implement chunking, I would need to evaluate whether 
+    the retrieved chunks contain the evidence. Then document-level id-based metrics are not enough.
+    - I also think I should implement at least one chunking strategy for comparison. If I do that, I need to structure the self-labeled dataset 
+    so it is future-proof and can support evaluation both with and without chunking, as well as chunking-specific tuning if I ever decide to use chunking.
+    - And also for tuning LLM-generated answers, I would need additional fields.
+  - Current works ok as it is?
