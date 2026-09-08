@@ -21,10 +21,10 @@ use a hybrid of self-labeled and synthetic sets.
 promising functionalities regarding RAG evaluation, but they do seem to have slightly different focuses. I am not going with
 Giskard. The page I searched is legacy documentation, and it seems that they have undergone significant changes recently.
 [Their newest version requires Python 3.12+](https://docs.giskard.ai/oss/migrate-from-v2#:~:text=Giskard%20v3%20requires%20Python%203.12%20or%20higher.)
-, which is another limitation since I am working with Python 3.11.1. Between RAGAS and DeepEval, I am leaning towards RAGAS as 
-they natively support [ids as part of the testset](https://docs.ragas.io/en/stable/references/evaluation_schema/#ragas.dataset_schema.BaseSample.to_string:~:text=SingleTurnSample,-Bases%3A%20BaseSample) and even offer [id-based metrices](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/?h=idbased#example_2:~:text=0.9999999999-,ID%20Based%20Context%20Precision,-IDBasedContextPrecision%20provides).
-### RAGAS
-- `SingleTurnSample` and `MultiTurnSample` are child of `BaseSample`. A `SingleTurnSample` is essentially one instance/interaction. For the current
+, which is another limitation since I am working with Python 3.11.1. Between Ragas and DeepEval, I am leaning towards Ragas as 
+they natively support [ids as part of the testset](https://docs.ragas.io/en/stable/references/evaluation_schema/#ragas.dataset_schema.BaseSample.to_string:~:text=SingleTurnSample,-Bases%3A%20BaseSample) and even offer [id-based metrics](https://docs.ragas.io/en/stable/concepts/metrics/available_metrics/context_precision/?h=idbased#example_2:~:text=0.9999999999-,ID%20Based%20Context%20Precision,-IDBasedContextPrecision%20provides).
+### Ragas
+- `SingleTurnSample` and `MultiTurnSample` inherit from `BaseSample`. A `SingleTurnSample` is essentially one instance/interaction. For the current
 stage, `SingleTurnSample` is the focus, as we are not yet conversational.
   - One thing to note is that attributes include both referenced contexts and contexts actually retrieved. And all attributes are optional. So, we can create instances of the class
   from the self-labeled dataset file `eval_rag.json`. And then run RAG on each of the instances and populate fields like `retrieved_context_ids`, before passing these instances in the
@@ -33,3 +33,32 @@ stage, `SingleTurnSample` is the focus, as we are not yet conversational.
   - One confusion here is the difference between `EvaluationDataset` and the [Dataset](https://docs.ragas.io/en/stable/concepts/datasets/) described in the Core Concepts section.
   Judging from the fact that the `evaluate()` method accepts both and the descriptions of `Dataset`, `Dataset` is a parallel to `EvaluationDataset` but with more
   flexibility?
+## Sep 8, 2026
+- As it turned out, they mentioned in the [Migration from v0.3 to v0.4](https://docs.ragas.io/en/stable/howtos/migrations/migrate_from_v03_to_v04/) that `evaluate()` "still works but discourage" as they will
+be removed in a future release. And it seems that the natively supported id-based metrics are also getting phased out judging from their updated list of available metrics.
+Although I am leaning toward using the old architecture for evaluation since a lot of the stuff makes immediate sense to me, I feel like RAG tuning is 
+a continuous process as the project and data evolve over time. And working with the new version now seems like a more reasonable choice.
+From what I can understand so far, this new dataset and experiment architecture has a better versioning and iteration
+system. Plus, with the new `Dataset` I can still add ids as part of the evaluation dataset and implement id-based metrics myself.
+- Here is how I am going to structure my data:
+  ```
+  {
+  "id": "sample_001",
+  "question": "When is my interview with ******?",
+  "reference_contexts": ["actual email content", ......]
+  "reference_context_ids": ["email_id", ......],
+  "metadata": {
+    "unanswerable": false,  <--- true or false
+    "source": "human",  <--- human or synthetic
+    "question_type": "schedule",  <--- schedule, summary, lookup, ......
+    "answer_type": "datetime",  <--- person, location, ......
+    "num_relevant_contexts": 1,  <--- number of emails needed to answer the question
+    "complexity": "easy"  <--- easy, medium, or hard
+    }
+  }
+  ```
+  - These are some of the metadata I can think of and could be useful in [slicing and dicing the dataset](https://docs.ragas.io/en/stable/concepts/datasets/#:~:text=Metadata%20is%20particularly%20useful%20for%20slicing%20and%20dicing%20the%20dataset%2C%20allowing%20you%20to%20analyze%20results%20across%20different%20facets) to
+  see how the system could perform on different types of dataset. For example, how well does the RAG retrieve contexts involving dates and times?
+  - The fields are chosen for the evaluation of retrieval quality.
+  - reference_context_ids tell you which emails are relevant, but reference_contexts entails the actual relevant content in those emails. I haven't implemented chunking yet, but if I do, 
+  they can be important for tuning chunking later.
